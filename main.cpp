@@ -1,7 +1,9 @@
 #include <iostream>
 #include <vector>
+#include <cstring>
 #include <string>
 
+std::vector<std::string> Tasks;
 
 void show_help() {
     // Mimic the 'usage' line from git help
@@ -23,6 +25,13 @@ void show_help() {
     std::cout << "get help\n";
     std::cout << "   help            Show this help message\n";
 }
+
+void add(const std::string& Task){
+    Tasks.push_back(Task);
+    for(const std::string x: Tasks){
+        std::cout<< x;
+    }
+}
         
 
 
@@ -34,8 +43,17 @@ int main(int argc,char* argv[]){
         show_help();
         return 1;
     }
-
+//    for(int i = 0; i < argc; i++){
+ //       std::cout<<"Argument: "<< argv[i] <<std::endl;
+  //  }      
     
+    if(strcmp(argv[1] , "add")==0){
+       if(argv[2]!= NULL)
+           add(argv[2]); 
+       else
+           show_help();
+
+    } 
 
 
 }
