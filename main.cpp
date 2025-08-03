@@ -2,8 +2,32 @@
 #include <vector>
 #include <cstring>
 #include <string>
+#include <filesystem>
+#include <cstdlib>
+#include <fstream>
+
+namespace fs = std::filesystem;
 
 std::vector<std::string> Tasks;
+
+std::string getPath() {
+
+    const char* home = std::getenv("HOME");
+    if(!home){
+        std::cerr<<"Unable to determine HOME directory"<<std::endl;
+        exit(1);
+    }
+
+    std::string dirpath = std::string(home) + "/.todo";
+    
+    if(!fs::exists(dirpath)){
+        fs::create_directory(dirpath);
+    }
+
+    return dirpath + "/todo.txt";
+
+}
+
 
 void show_help() {
     // Mimic the 'usage' line from git help
@@ -26,14 +50,36 @@ void show_help() {
     std::cout << "   help            Show this help message\n";
 }
 
-void add(const std::string& Task){
-    Tasks.push_back(Task);
-    for(const std::string x: Tasks){
-        std::cout<< x;
+void add(const std::string& Task, std::string& filePath){
+
+    std::ofstream outfile(filePath, std::ios::app);
+
+    if(outfile.is_open()){
+        outfile<<Task<<std::endl;
+        outfile.close();
+    }
+    
+    else{
+        std::cerr<<"Error opening file for writing"<<std::endl;
     }
 }
-        
 
+void list(const std::string& filePath){
+
+    std::ifstream infile(filePath);
+    if(infile.is_open()) {
+        std::string line;
+        while(getline(infile, line)){
+            std::cout<< line << std:: endl;
+        }
+        infile.close();
+    }
+    else{
+        std::cerr<<"No Entries yet."<<std::endl;
+    }
+
+}
+        
 
 int main(int argc,char* argv[]){
         
@@ -44,16 +90,22 @@ int main(int argc,char* argv[]){
         return 1;
     }
 //    for(int i = 0; i < argc; i++){
- //       std::cout<<"Argument: "<< argv[i] <<std::endl;
-  //  }      
-    
+//       std::cout<<"Argument: "<< argv[i] <<std::endl;
+//  }      
+
+    std::string filePath = getPath();
+
     if(strcmp(argv[1] , "add")==0){
        if(argv[2]!= NULL)
-           add(argv[2]); 
+           add(argv[2],filePath); 
        else
            show_help();
 
     } 
+
+    if(strcmp(argv[1], "--list")==0){
+        list(filePath);
+    }
 
 
 }
