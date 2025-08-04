@@ -79,6 +79,23 @@ void list(const std::string& filePath){
     }
 
 }
+
+void clear(const std::string& filePath){
+
+    if(fs::exists(filePath)){
+        try {
+            fs::remove(filePath);
+        }
+        catch(const fs::filesystem_error& e){
+            std::cerr << "Error deleting file: " << e.what() << '\n';
+        }
+    }
+    else{
+            std::cout << "File '" << filePath << "' does not exist.\n";
+    }
+
+
+}
         
 
 int main(int argc,char* argv[]){
@@ -89,23 +106,32 @@ int main(int argc,char* argv[]){
         show_help();
         return 1;
     }
-//    for(int i = 0; i < argc; i++){
-//       std::cout<<"Argument: "<< argv[i] <<std::endl;
-//  }      
-
     std::string filePath = getPath();
 
     if(strcmp(argv[1] , "add")==0){
-       if(argv[2]!= NULL)
-           add(argv[2],filePath); 
-       else
-           show_help();
+        if(argv[2]!= NULL)
+            add(argv[2],filePath); 
+        else
+            show_help();
+    }
 
-    } 
+     
 
     if(strcmp(argv[1], "--list")==0){
         list(filePath);
     }
 
+    if(strcmp(argv[1], "--clear")==0){
+        clear(filePath);
+    }
+
+    if(strcmp(argv[1], "--help")==0)
+        show_help();
+
+            
+    else{
+        std::cerr<< "invalid argument "<< "'" << argv[2] << "'";
+        show_help();
+    }
 
 }
