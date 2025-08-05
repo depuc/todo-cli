@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <cstdlib>
 #include <fstream>
+#include <sstream>
 
 namespace fs = std::filesystem;
 
@@ -50,18 +51,40 @@ void show_help() {
     std::cout << "   help            Show this help message\n";
 }
 
-void add(const std::string& Task, std::string& filePath){
+void add(const std::string& Task, std::string& filePath) {
+
+    std::ifstream infile(filePath);
+    std::string line;
+    int lastId = 0;
+
+    while (std::getline(infile, line)) {
+        if (line.rfind("#", 0) == 0) { 
+            size_t dashPos = line.find("-");
+            if (dashPos != std::string::npos) {
+                std::string idStr = line.substr(1, dashPos - 2);
+                try {
+                    int id = std::stoi(idStr);
+                    if (id > lastId) {
+                        lastId = id;
+                    }
+                } catch (...) {
+                    // Skip lines with bad format
+                }
+            }
+        }
+    }
+    infile.close();
+
+    int newId = lastId + 1;
 
     std::ofstream outfile(filePath, std::ios::app);
-
-    if(outfile.is_open()){
-        outfile<<Task<<std::endl;
+    if (outfile.is_open()) {
+        outfile << "#" << newId << " - " << Task << std::endl;
         outfile.close();
+    } else {
+        std::cerr << "Error opening file for writing" << std::endl;
     }
-    
-    else{
-        std::cerr<<"Error opening file for writing"<<std::endl;
-    }
+
 }
 
 void list(const std::string& filePath){
@@ -97,41 +120,39 @@ void clear(const std::string& filePath){
 
 }
         
-
-int main(int argc,char* argv[]){
-        
-
-    if(argc < 2){
-        std::cerr<<"Error: No Arguments provided.\n";
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        std::cerr << "Error: No arguments provided.\n";
         show_help();
         return 1;
     }
+
     std::string filePath = getPath();
 
-    if(strcmp(argv[1] , "add")==0){
-        if(argv[2]!= NULL)
-            add(argv[2],filePath); 
-        else
+    std::string command = argv[1];
+
+    if (command == "add") {
+        if (argc >= 3) {
+            add(argv[2], filePath);
+        } else {
+            std::cerr << "Error: No task provided.\n";
             show_help();
+        }
     }
-
-     
-
-    if(strcmp(argv[1], "--list")==0){
+    else if (command == "--list") {
         list(filePath);
     }
-
-    if(strcmp(argv[1], "--clear")==0){
+    else if (command == "--clear") {
         clear(filePath);
     }
-
-    if(strcmp(argv[1], "--help")==0)
+    else if (command == "--help") {
         show_help();
-
-            
-    else{
-        std::cerr<< "invalid argument "<< "'" << argv[2] << "'";
+    }
+    else {
+        std::cerr << "Invalid command: '" << command << "'\n";
         show_help();
     }
 
+    return 0;
 }
+
