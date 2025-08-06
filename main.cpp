@@ -68,7 +68,7 @@ void add(const std::string& Task, std::string& filePath) {
                         lastId = id;
                     }
                 } catch (...) {
-                    // Skip lines with bad format
+
                 }
             }
         }
